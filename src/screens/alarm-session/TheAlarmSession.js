@@ -1,93 +1,142 @@
-import React, { Component } from 'react';
-import { Button, Text } from "react-native";
-import { SafeAreaView } from "react-navigation";
+import React, {Component} from 'react';
+import {Button, Text, View} from 'react-native';
+import {SafeAreaView} from 'react-navigation';
+import {connect} from 'react-redux';
+import {deleteAlarm} from '../../state/actions/ActiveAlarmActions';
 
 class TheAlarmSession extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            seconds: null,
-            timeLeft: '',
-            timerName: `How's the josh?`,
+  constructor(props) {
+    super(props);
+    this.state = {
+      seconds: null,
+      timeLeft: '',
+      timerName: `How's the josh?`,
+    };
+  }
+
+  _onStartPomodoro = async (focusTime, breakTime, restTime, cycles, sets) => {
+    const focusIntoSeconds = focusTime * 60;
+    const breakIntoSeconds = breakTime * 60;
+    const restIntoSeconds = restTime * 60;
+
+    for (let index = 0; index < sets; index++) {
+      for (let index = 0; index < cycles; index++) {
+        await this._startTimerSession(
+          focusIntoSeconds,
+          'Focus: ',
+          this._onUpdateTimeLeft,
+        );
+
+        await this._startAlarmSession();
+
+        await this._startTimerSession(
+          breakIntoSeconds,
+          'Break: ',
+          this._onUpdateTimeLeft,
+        );
+
+        await this._startAlarmSession();
+      }
+      await this._startTimerSession(
+        restIntoSeconds,
+        'Rest now for :',
+        this._onUpdateTimeLeft,
+      );
+    }
+
+    this.setState({
+      timerName: 'Well done for today!',
+      timeLeft: '',
+    });
+  };
+
+  _startTimerSession = async (seconds, sessionName, action) => {
+    this.setState({
+      seconds,
+      timeLeft: this._toTimeFromSeconds(seconds),
+      timerName: sessionName,
+    });
+    await this._timerDelay(action);
+  };
+
+  _startAlarmSession = async () => {
+    this.setState({
+      timerName: 'Alarming!',
+      timeLeft: '',
+    });
+    await this._alarmDelay();
+  };
+
+  _alarmDelay = () => {
+    return new Promise(resolve => setTimeout(resolve, 2000));
+  };
+
+  _timerDelay = action => {
+    return new Promise(resolve => {
+      const interval = setInterval(() => {
+        action();
+
+        if (this.state.seconds <= 0) {
+          clearInterval(interval);
+          resolve('complete');
         }
-    }
+      }, 1000);
+    });
+  };
 
-    _onStartPomodoro = async (focusTime, breakTime) => {
-        const focusIntoSeconds = focusTime * 60;
-        const breakIntoSeconds = breakTime * 60;
-        const cycles = 2;
+  _onUpdateTimeLeft = () => {
+    this.setState({
+      seconds: this.state.seconds - 1,
+      timeLeft: this._toTimeFromSeconds(this.state.seconds - 1),
+    });
+  };
 
-        for (let index = 0; index < cycles; index++) {
-            this.setState({
-                seconds: focusIntoSeconds,
-                timeLeft: this._toTimeFromSeconds(focusIntoSeconds),
-                timerName: 'Focus :',
-            });
-            await this._timerDelay(this._onUpdateTimeLeft);
-            this.setState({
-                timerName: 'Alarming!',
-                timeLeft: '',
-            });
-            await this._alarmDelay();
-            this.setState({
-                seconds: breakIntoSeconds,
-                timeLeft: this._toTimeFromSeconds(breakIntoSeconds),
-                timerName: 'Break :',
-            });
-            await this._timerDelay(this._onUpdateTimeLeft);
-            this.setState({
-                timerName: 'Alarming!',
-                timeLeft: '',
-            });
-            await this._alarmDelay();
-        }
+  _toTimeFromSeconds = seconds => {
+    return `${Math.floor(seconds / 60)} : ${seconds % 60}${
+      seconds % 60 === 0 ? 0 : ''
+    }`;
+  };
 
-        this.setState({
-            timerName: 'Well done for today!',
-            timeLeft: '',
-        });
-    }
-
-    _alarmDelay = () => {
-        return new Promise(resolve => setTimeout(resolve, 2000));
-    }
-
-    _timerDelay = (action) => {
-        return new Promise((resolve) => {
-            const interval = setInterval(() => {
-                action();
-
-                if (this.state.seconds <= 0) {
-                    clearInterval(interval);
-                    resolve('complete');
-                }
-            }, 1000);
-        });
-    }
-
-    _onUpdateTimeLeft = () => {
-
-        this.setState({
-            seconds: this.state.seconds - 1,
-            timeLeft: this._toTimeFromSeconds(this.state.seconds - 1),
-        });
-    }
-
-    _toTimeFromSeconds = (seconds) => {
-        return `${Math.floor(seconds / 60)} : ${seconds % 60}${seconds % 60 === 0 ? 0 : ''}`;
-    }
-
-    render() {
-        return <SafeAreaView style={{
-            display: 'flex',
-            alignItems: 'center'
+  render() {
+    return (
+      <SafeAreaView
+        style={{
+          display: 'flex',
+          alignItems: 'center',
         }}>
-            <Text>
-                {this.state.timerName} {this.state.timeLeft}
-            </Text>
-            <Button title="Start!" onPress={() => { this._onStartPomodoro(0.1, 0.05) }} />
-        </SafeAreaView>;
-    }
+        <Text style={{fontSize: 30, marginVertical: 20, fontWeight: '600'}}>
+          {this.state.timerName} {this.state.timeLeft}
+        </Text>
+        <View style={{marginVertical: 20}}>
+          <Button
+            title="Start"
+            onPress={() => {
+              const {focusTime, repBreakTime, setBreakTime, reps, sets} =
+                this.props.alarm;
+              this._onStartPomodoro(0.1, 0.05, 0.1, 2, 3);
+            }}
+          />
+        </View>
+        <Button
+          color="red"
+          title="Stop!"
+          onPress={() => {
+            this.props.navigation.navigate('App');
+          }}
+        />
+      </SafeAreaView>
+    );
+  }
 }
 
-export default TheAlarmSession;
+function mapStateToProps(state) {
+  return {
+    alarm: state.alarm,
+  };
+}
+
+const mapDispatchToProps = dispatch => ({
+  deleteAlarm: () => dispatch(deleteAlarm()),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(TheAlarmSession);
