@@ -4,6 +4,9 @@ import {SafeAreaView} from 'react-navigation';
 import {connect} from 'react-redux';
 import {deleteAlarm} from '../../state/actions/ActiveAlarmActions';
 import BackgroundTimer from 'react-native-background-timer';
+import Sound from 'react-native-sound';
+
+Sound.setCategory('Playback');
 
 class TheAlarmSession extends Component {
   constructor(props) {
@@ -12,8 +15,44 @@ class TheAlarmSession extends Component {
       seconds: null,
       timeLeft: '',
       timerName: `How's the josh?`,
+      sound: null,
     };
   }
+
+  componentDidMount() {
+    const sound = new Sound('alarm.mp3', Sound.MAIN_BUNDLE, error => {
+      if (error) {
+        console.log('failed to load the sound', error);
+        return;
+      }
+      // loaded successfully
+      console.log(
+        'duration in seconds: ' +
+          sound.getDuration() +
+          'number of channels: ' +
+          sound.getNumberOfChannels(),
+      );
+    });
+    this.setState({
+      sound: sound,
+    });
+  }
+
+  onHandleSound = (haveToPlay = true) => {
+    if (haveToPlay) {
+      this.state.sound.play(success => {
+        if (success) {
+          console.log('successfully finished playing');
+        } else {
+          console.log('playback failed due to audio decoding errors');
+        }
+      });
+
+      return;
+    }
+
+    this.state.sound.stop();
+  };
 
   _onStartPomodoro = async (focusTime, breakTime, restTime, cycles, sets) => {
     const focusIntoSeconds = focusTime * 60;
@@ -65,7 +104,9 @@ class TheAlarmSession extends Component {
       timerName: 'Alarming!',
       timeLeft: '',
     });
+    this.onHandleSound();
     await this._alarmDelay();
+    this.onHandleSound(false);
   };
 
   _alarmDelay = () => {
