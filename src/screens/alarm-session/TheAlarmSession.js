@@ -3,6 +3,7 @@ import {Button, Text, View} from 'react-native';
 import {SafeAreaView} from 'react-navigation';
 import {connect} from 'react-redux';
 import {deleteAlarm} from '../../state/actions/ActiveAlarmActions';
+import BackgroundTimer from 'react-native-background-timer';
 
 class TheAlarmSession extends Component {
   constructor(props) {
@@ -19,8 +20,8 @@ class TheAlarmSession extends Component {
     const breakIntoSeconds = breakTime * 60;
     const restIntoSeconds = restTime * 60;
 
-    for (let index = 0; index < sets; index++) {
-      for (let index = 0; index < cycles; index++) {
+    for (let i = 0; i < sets; i++) {
+      for (let j = 0; j < cycles; j++) {
         await this._startTimerSession(
           focusIntoSeconds,
           'Focus: ',
@@ -68,16 +69,16 @@ class TheAlarmSession extends Component {
   };
 
   _alarmDelay = () => {
-    return new Promise(resolve => setTimeout(resolve, 2000));
+    return new Promise(resolve => BackgroundTimer.setTimeout(resolve, 2000));
   };
 
   _timerDelay = action => {
     return new Promise(resolve => {
-      const interval = setInterval(() => {
+      const intervalId = BackgroundTimer.setInterval(() => {
         action();
 
         if (this.state.seconds <= 0) {
-          clearInterval(interval);
+          BackgroundTimer.clearInterval(intervalId);
           resolve('complete');
         }
       }, 1000);
