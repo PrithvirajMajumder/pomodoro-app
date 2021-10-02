@@ -1,12 +1,9 @@
 import React, { Component } from "react";
-
 import {
-    Text,
-    SafeAreaView,
-    Button
+    Button, SafeAreaView, Text
 } from "react-native";
 import { connect } from 'react-redux';
-import { actions as appActions } from "../../actions/AppActions";
+
 
 class SignIn extends Component {
 
@@ -18,11 +15,6 @@ class SignIn extends Component {
     }
 
     _onPressButton() {
-        this.props.setUserDetails({
-            name: "Subhashis Routh",
-            eligiblity: "nothing",
-            address: "Garia"
-        });
         this.props.navigation.navigate('App');
     }
 
@@ -42,17 +34,6 @@ class SignIn extends Component {
     }
 }
 
-
-
-
-
-const mapDispatchToProps = dispatch => ({
-    setUserDetails: (data) => dispatch(appActions.setUserDetails(data))
-});
-
-
-
 export default connect(
     null,
-    mapDispatchToProps
 )(SignIn);

@@ -1,46 +1,13 @@
-import React, { Component } from "react";
-
-import { createAppContainer, createDrawerNavigator, createSwitchNavigator } from "react-navigation";
-import { createStore, combineReducers, applyMiddleware } from 'redux';
+import React from "react";
+import { createAppContainer, createSwitchNavigator } from "react-navigation";
 import { createStackNavigator } from 'react-navigation-stack';
-
-
 import { Provider } from 'react-redux';
-
-// import {
-//     createReduxContainer,
-//     createReactNavigationReduxMiddleware,
-//     createNavigationReducer,
-//   } from 'react-navigation-redux-helpers';
-import { createLogger } from 'redux-logger';
-import thunk from 'redux-thunk';
-import storageMiddleware, { actions as storageActions } from '../middleware/storageMiddleware';
-
-
-import { reducer as app } from '../reducers/AppReducer';
-
-import AppContainer from "../screens/AppContainer";
-import SplashScreen from "../screens/SplashScreen";
-import SignUp from "../screens/auth/SignUp";
-import SignIn from "../screens/auth/SignIn";
+import TheAlarmSession from "../screens/alarm-session/TheAlarmSession";
 import Home from "../screens/app/Home";
-
-
-
-const logger = createLogger({
-    collapsed: true,
-    level: 'info',
-});
-
-const reducers = combineReducers({ app });
-const rootReducer = (state, action) => {
-    return reducers(state, action);
-}
-
-const middleware = applyMiddleware(thunk, storageMiddleware, logger);
-const store = createStore(rootReducer, middleware);
-store.dispatch(storageActions.appLoad());
-
+import SignIn from "../screens/auth/SignIn";
+import SignUp from "../screens/auth/SignUp";
+import SplashScreen from "../screens/SplashScreen";
+import store from "../state/store/store";
 
 console.disableYellowBox = true;
 
@@ -82,16 +49,26 @@ const AppStack = createStackNavigator({
     }
 );
 
-
+const AlarmSessionStack = createStackNavigator({
+    TheAlarmSession: {
+        screen: TheAlarmSession
+    }
+},
+    {
+        headerMode: "none",
+        initialRouteName: 'TheAlarmSession'
+    }
+);
 
 let Navigation = createAppContainer(createSwitchNavigator(
     {
         Splash: SpashStack,
         Auth: AuthStack,
         App: AppStack,
+        AlarmSession: AlarmSessionStack,
     },
     {
-        initialRouteName: 'Splash'
+        initialRouteName: 'App'
     }
 ));
 

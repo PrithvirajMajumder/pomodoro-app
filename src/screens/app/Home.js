@@ -1,48 +1,36 @@
-import React, { Component } from "react";
-import {
-    Button, SafeAreaView, Text, View
-} from "react-native";
-import { connect } from 'react-redux';
-import { actions as appActions } from "../../actions/AppActions";
-import TheAlarmConfig from "../../components/TheAlarmConfig";
+import React from 'react';
+import {Button, Text} from 'react-native';
+import {SafeAreaView} from 'react-navigation';
+import {useDispatch, useSelector} from 'react-redux';
+import {bindActionCreators} from 'redux';
+import {actionCreators} from '../../state/actions/index';
 
+function Home(props) {
+  const alarm = useSelector(state => state.alarm);
+  const dispatch = useDispatch();
 
-class Home extends Component {
+  const {setAlarm, deleteAlarm} = bindActionCreators(actionCreators, dispatch);
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            loading: false,
-            message: 'hola',
-        };
-    }
+  const onStartAlarm = () => {
+    props.navigation.navigate('AlarmSession');
+  };
 
-    render() {
-
-        return (
-            <SafeAreaView >
-                <TheAlarmConfig />
-            </SafeAreaView>
-        );
-    }
+  return (
+    <SafeAreaView>
+      <Button title="Go to Alarm session" onPress={() => onStartAlarm()} />
+      <Button
+        color="orange"
+        title="Set Alarm"
+        onPress={() => setAlarm('Bhola')}
+      />
+      <Button
+        color="red"
+        title="Del alarm"
+        onPress={() => deleteAlarm()}
+      />
+      <Text>{alarm}</Text>
+    </SafeAreaView>
+  );
 }
 
-function mapStateToProps(state) {
-    return {
-        user: state.app.userDetails
-    };
-}
-
-
-const mapDispatchToProps = dispatch => ({
-    setUserDetails: (data) => dispatch(appActions.setUserDetails(data))
-});
-
-
-
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(Home);
-
-
+export default Home;

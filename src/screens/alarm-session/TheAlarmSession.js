@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Button, Text } from "react-native";
 import { SafeAreaView } from "react-navigation";
 
-class TheAlarmConfig extends Component {
+class TheAlarmSession extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -13,23 +13,33 @@ class TheAlarmConfig extends Component {
     }
 
     _onStartPomodoro = async (focusTime, breakTime) => {
-        const focusIntoSecond = focusTime * 60;
-        const breakIntoSecond = breakTime * 60;
+        const focusIntoSeconds = focusTime * 60;
+        const breakIntoSeconds = breakTime * 60;
         const cycles = 2;
 
         for (let index = 0; index < cycles; index++) {
             this.setState({
-                seconds: focusIntoSecond,
-                timeLeft: this._toTimeFromSeconds(focusIntoSecond),
+                seconds: focusIntoSeconds,
+                timeLeft: this._toTimeFromSeconds(focusIntoSeconds),
                 timerName: 'Focus :',
             });
-            await this._delay(this._onUpdateTimeLeft);
+            await this._timerDelay(this._onUpdateTimeLeft);
             this.setState({
-                seconds: breakIntoSecond,
-                timeLeft: this._toTimeFromSeconds(breakIntoSecond),
+                timerName: 'Alarming!',
+                timeLeft: '',
+            });
+            await this._alarmDelay();
+            this.setState({
+                seconds: breakIntoSeconds,
+                timeLeft: this._toTimeFromSeconds(breakIntoSeconds),
                 timerName: 'Break :',
             });
-            await this._delay(this._onUpdateTimeLeft);
+            await this._timerDelay(this._onUpdateTimeLeft);
+            this.setState({
+                timerName: 'Alarming!',
+                timeLeft: '',
+            });
+            await this._alarmDelay();
         }
 
         this.setState({
@@ -38,7 +48,11 @@ class TheAlarmConfig extends Component {
         });
     }
 
-    _delay(action) {
+    _alarmDelay = () => {
+        return new Promise(resolve => setTimeout(resolve, 2000));
+    }
+
+    _timerDelay = (action) => {
         return new Promise((resolve) => {
             const interval = setInterval(() => {
                 action();
@@ -59,7 +73,7 @@ class TheAlarmConfig extends Component {
         });
     }
 
-    _toTimeFromSeconds(seconds) {
+    _toTimeFromSeconds = (seconds) => {
         return `${Math.floor(seconds / 60)} : ${seconds % 60}${seconds % 60 === 0 ? 0 : ''}`;
     }
 
@@ -76,4 +90,4 @@ class TheAlarmConfig extends Component {
     }
 }
 
-export default TheAlarmConfig;
+export default TheAlarmSession;
