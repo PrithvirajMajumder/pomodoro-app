@@ -1,39 +1,72 @@
-import React, { Component } from "react";
-import {
-    Button, SafeAreaView, Text
-} from "react-native";
-import { connect } from 'react-redux';
+import {Formik} from 'formik';
+import React, {useContext} from 'react';
+import {Button, SafeAreaView, Text, View} from 'react-native';
+import {TextInput} from 'react-native-gesture-handler';
+import * as yup from 'yup';
+import {AuthContext} from '../../auth/AuthProvider';
 
+function SignIn(props) {
+  const {login} = useContext(AuthContext);
 
-class SignIn extends Component {
+  const validationSchema = yup.object().shape({
+    email: yup.string().required().email().label('Email'),
+    password: yup.string().required().min(6).max(18).label('Password'),
+  });
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            loading: false
-        };
-    }
-
-    _onPressButton() {
-        this.props.navigation.navigate('App');
-    }
-
-    render() {
-        return (
-            <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-
-                <Text>Login</Text>
-
-                <Button
-                    onPress={this._onPressButton.bind(this)}
-                    title="Go to Home"
-                />
-
-            </SafeAreaView>
-        );
-    }
+  return (
+    <SafeAreaView>
+      <Text>Login</Text>
+      <Formik
+        initialValues={{
+          email: '',
+          password: '',
+        }}
+        onSubmit={async ({email, password}) => {
+          try {
+            await login(email, password);
+            props.navigation.navigate('App');
+          } catch (error) {
+            console.error(error);
+          }
+        }}
+        validationSchema={validationSchema}>
+        {({
+          handleChange,
+          handleSubmit,
+          errors,
+          setFieldTouched,
+          touched,
+          isValid,
+          initialValues,
+        }) => (
+          <View style={{padding: 20}}>
+            <TextInput
+              placeholderTextColor="#b2b2b2"
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="email-address"
+              placeholder="Email"
+              onChangeText={handleChange('email')}
+              onBlur={() => setFieldTouched('email')}
+              style={{color: 'black'}}
+            />
+            <TextInput
+              secureTextEntry
+              placeholderTextColor="#b2b2b2"
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="default"
+              placeholder="Password"
+              onChangeText={handleChange('password')}
+              onBlur={() => setFieldTouched('password')}
+              style={{color: 'black'}}
+            />
+            <Button disabled={!isValid} title="Submit" onPress={handleSubmit} />
+          </View>
+        )}
+      </Formik>
+    </SafeAreaView>
+  );
 }
 
-export default connect(
-    null,
-)(SignIn);
+export default SignIn;

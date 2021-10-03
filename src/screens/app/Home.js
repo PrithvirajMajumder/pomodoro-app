@@ -1,11 +1,12 @@
 import {Formik} from 'formik';
-import React from 'react';
+import React, {useContext} from 'react';
 import {Button, StyleSheet, TextInput, View} from 'react-native';
 import {SafeAreaView} from 'react-navigation';
 import {useDispatch} from 'react-redux';
 import {actionCreators} from '../../state/actions/index';
 import {bindActionCreators} from 'redux';
 import Alarm from '../../models/Alarm.Model';
+import {AuthContext} from '../../auth/AuthProvider';
 import * as yup from 'yup';
 
 const validationSchema = yup.object().shape({
@@ -19,6 +20,7 @@ const validationSchema = yup.object().shape({
 function Home(props) {
   const dispatch = useDispatch();
   const {setAlarm} = bindActionCreators(actionCreators, dispatch);
+  const {logout} = useContext(AuthContext);
 
   return (
     <SafeAreaView>
@@ -31,7 +33,7 @@ function Home(props) {
           reps: 4,
           sets: 3,
         }}
-        onSubmit={async (values) => {
+        onSubmit={async values => {
           await setAlarm(
             new Alarm({
               focusTime: parseInt(values.focusTime),
@@ -115,6 +117,17 @@ function Home(props) {
           </View>
         )}
       </Formik>
+      <Button
+        color="red"
+        title="Logout"
+        onPress={async () => {
+          try {
+            await logout();
+            props.navigation.navigate('Splash');
+          } catch (error) {
+            console.log(error);
+          }
+        }}></Button>
     </SafeAreaView>
   );
 }

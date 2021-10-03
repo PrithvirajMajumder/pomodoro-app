@@ -1,36 +1,42 @@
-import React, { Component } from "react";
+import React, {useContext, useEffect, useState} from 'react';
+import {Text, SafeAreaView} from 'react-native';
+import auth from '@react-native-firebase/auth';
+import {AuthContext} from '../auth/AuthProvider';
 
-import {
-    Text,
-    SafeAreaView,
-} from "react-native";
+function SplashScreen(props) {
+  const {user, setUser} = useContext(AuthContext);
+  const [initializing, setInitializing] = useState(true);
 
-export default class SplashScreen extends Component {
+  const onAuthStateChanged = user => {
+    setUser(user);
+    if (initializing) {
+      setInitializing(false);
+    }
+  };
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            loading: false
-        };
+  useEffect(() => {
+    const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
+    return subscriber; // unsubscribe on unmount
+  }, []);
+
+  const onChangeRouteAfterDelay = stackName => {
+    if (initializing) {
+      return;
     }
 
-    componentDidMount() {
-        var that = this;
-        setTimeout(() => {
-            that.props.navigation.navigate('Auth');
-        }, 2000);
-    }
+    setTimeout(() => {
+      props.navigation.navigate(stackName);
+    }, 2000);
+  };
 
-    render() {
-        return (
-            <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+  onChangeRouteAfterDelay(user ? 'App' : 'Auth');
 
-                    <Text>SplashScreen</Text>
-
-            </SafeAreaView>
-        );
-    }
+  return (
+    <SafeAreaView
+      style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+      <Text>SplashScreen</Text>
+    </SafeAreaView>
+  );
 }
 
-
-
+export default SplashScreen;
