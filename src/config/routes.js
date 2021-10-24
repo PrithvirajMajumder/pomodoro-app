@@ -1,5 +1,9 @@
 import React from 'react';
-import {createAppContainer, createSwitchNavigator} from 'react-navigation';
+import {
+  createAppContainer,
+  createSwitchNavigator,
+  SafeAreaView,
+} from 'react-navigation';
 import {createStackNavigator} from 'react-navigation-stack';
 import {Provider} from 'react-redux';
 import TheAlarmSession from '../screens/alarm-session/TheAlarmSession';
